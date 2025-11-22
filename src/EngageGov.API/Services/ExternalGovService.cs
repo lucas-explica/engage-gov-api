@@ -21,7 +21,10 @@ public class ExternalGovService : IExternalGovService
         try
         {
             var client = _httpClientFactory.CreateClient("camara");
-            var resp = await client.GetAsync("/api/v2/deputados?itens=500", cancellationToken);
+            var req = new HttpRequestMessage(HttpMethod.Get, "/api/v2/deputados?itens=500");
+            req.Headers.Accept.Clear();
+            req.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+            var resp = await client.SendAsync(req, cancellationToken);
             resp.EnsureSuccessStatusCode();
             var text = await resp.Content.ReadAsStringAsync(cancellationToken);
 
@@ -61,7 +64,10 @@ public class ExternalGovService : IExternalGovService
         try
         {
             var client = _httpClientFactory.CreateClient("camara");
-            var resp = await client.GetAsync($"/api/v2/proposicoes?ano={year}&itens={items}", cancellationToken);
+            var req = new HttpRequestMessage(HttpMethod.Get, $"/api/v2/proposicoes?ano={year}&itens={items}");
+            req.Headers.Accept.Clear();
+            req.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+            var resp = await client.SendAsync(req, cancellationToken);
             resp.EnsureSuccessStatusCode();
             var text = await resp.Content.ReadAsStringAsync(cancellationToken);
 

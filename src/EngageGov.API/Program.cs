@@ -17,8 +17,13 @@ builder.Services.AddHttpClient("camara", client =>
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
-// Register ExternalGovService implementation
-builder.Services.AddScoped<EngageGov.Application.Interfaces.IExternalGovService, EngageGov.API.Services.ExternalGovService>();
+// Register ExternalGovService as a typed client using the named 'camara' HttpClient
+builder.Services.AddHttpClient<EngageGov.Application.Services.ExternalGovService>(client =>
+{
+    client.BaseAddress = new Uri("https://dadosabertos.camara.leg.br");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+builder.Services.AddScoped<EngageGov.Application.Interfaces.IExternalGovService>(sp => sp.GetRequiredService<EngageGov.Application.Services.ExternalGovService>());
 
 // Add controllers
 builder.Services.AddControllers();
