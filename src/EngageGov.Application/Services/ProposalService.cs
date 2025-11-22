@@ -94,13 +94,7 @@ public class ProposalService : IProposalService
         try
         {
             var proposals = await _unitOfWork.Proposals.GetAllAsync(cancellationToken);
-            var proposalDtos = new List<ProposalDto>();
-
-            foreach (var proposal in proposals)
-            {
-                var citizen = await _unitOfWork.Citizens.GetByIdAsync(proposal.CitizenId, cancellationToken);
-                proposalDtos.Add(MapToDto(proposal, citizen?.FullName ?? "Unknown"));
-            }
+            var proposalDtos = proposals.Select(p => MapToDto(p, p.Citizen?.FullName ?? "Unknown"));
 
             return Result<IEnumerable<ProposalDto>>.Success(proposalDtos);
         }
@@ -117,13 +111,7 @@ public class ProposalService : IProposalService
         try
         {
             var proposals = await _unitOfWork.Proposals.GetByStatusAsync(status, cancellationToken);
-            var proposalDtos = new List<ProposalDto>();
-
-            foreach (var proposal in proposals)
-            {
-                var citizen = await _unitOfWork.Citizens.GetByIdAsync(proposal.CitizenId, cancellationToken);
-                proposalDtos.Add(MapToDto(proposal, citizen?.FullName ?? "Unknown"));
-            }
+            var proposalDtos = proposals.Select(p => MapToDto(p, p.Citizen?.FullName ?? "Unknown"));
 
             return Result<IEnumerable<ProposalDto>>.Success(proposalDtos);
         }
@@ -225,13 +213,7 @@ public class ProposalService : IProposalService
         try
         {
             var proposals = await _unitOfWork.Proposals.SearchAsync(searchTerm, cancellationToken);
-            var proposalDtos = new List<ProposalDto>();
-
-            foreach (var proposal in proposals)
-            {
-                var citizen = await _unitOfWork.Citizens.GetByIdAsync(proposal.CitizenId, cancellationToken);
-                proposalDtos.Add(MapToDto(proposal, citizen?.FullName ?? "Unknown"));
-            }
+            var proposalDtos = proposals.Select(p => MapToDto(p, p.Citizen?.FullName ?? "Unknown"));
 
             return Result<IEnumerable<ProposalDto>>.Success(proposalDtos);
         }

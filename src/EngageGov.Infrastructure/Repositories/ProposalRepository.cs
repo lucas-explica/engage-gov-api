@@ -83,13 +83,13 @@ public class ProposalRepository : Repository<Proposal>, IProposalRepository
         if (string.IsNullOrWhiteSpace(searchTerm))
             return await GetAllAsync(cancellationToken);
 
-        var lowerSearchTerm = searchTerm.ToLower();
+        var lowerSearchTerm = searchTerm.ToLowerInvariant();
 
         return await _dbSet
             .Include(p => p.Citizen)
-            .Where(p => p.Title.ToLower().Contains(lowerSearchTerm) ||
-                       p.Description.ToLower().Contains(lowerSearchTerm) ||
-                       p.Location.ToLower().Contains(lowerSearchTerm))
+            .Where(p => EF.Functions.Like(p.Title.ToLower(), $"%{lowerSearchTerm}%") ||
+                       EF.Functions.Like(p.Description.ToLower(), $"%{lowerSearchTerm}%") ||
+                       EF.Functions.Like(p.Location.ToLower(), $"%{lowerSearchTerm}%"))
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
     }
