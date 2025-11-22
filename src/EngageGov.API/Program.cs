@@ -10,6 +10,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// Named HttpClient for external government data (Câmara Dados Abertos)
+builder.Services.AddHttpClient("camara", client =>
+{
+    client.BaseAddress = new Uri("https://dadosabertos.camara.leg.br");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+
+// Register ExternalGovService implementation
+builder.Services.AddScoped<EngageGov.Application.Interfaces.IExternalGovService, EngageGov.API.Services.ExternalGovService>();
+
 // Add controllers
 builder.Services.AddControllers();
 

@@ -14,6 +14,7 @@ public static class DependencyInjection
         // Register application services
         services.AddScoped<IProposalService, ProposalService>();
         services.AddScoped<ICitizenService, CitizenService>();
+    // External gov service is registered in the API project where HttpClientFactory is available
 
         return services;
     }
