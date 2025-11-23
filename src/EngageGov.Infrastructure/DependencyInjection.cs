@@ -28,7 +28,7 @@ public static class DependencyInjection
         else
         {
             services.AddDbContext<EngageGovDbContext>(options =>
-                options.UseSqlServer(connectionString, 
+                options.UseNpgsql(connectionString, 
                     b => b.MigrationsAssembly(typeof(EngageGovDbContext).Assembly.FullName)));
         }
 

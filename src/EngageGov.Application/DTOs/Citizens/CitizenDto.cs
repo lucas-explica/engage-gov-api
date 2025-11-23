@@ -6,10 +6,11 @@ namespace EngageGov.Application.DTOs.Citizens;
 public class CitizenDto
 {
     public Guid Id { get; set; }
-    public string FullName { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
-    public string? PhoneNumber { get; set; }
-    public bool IsEmailVerified { get; set; }
-    public bool IsActive { get; set; }
+    public string? Phone { get; set; }
+    public string? Neighborhood { get; set; }
+    public int Points { get; set; } = 0;
     public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 }

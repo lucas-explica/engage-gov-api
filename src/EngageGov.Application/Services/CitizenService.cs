@@ -29,16 +29,13 @@ public class CitizenService : ICitizenService
             if (await _unitOfWork.Citizens.EmailExistsAsync(dto.Email, cancellationToken))
                 return Result<CitizenDto>.Failure("A citizen with this email already exists");
 
-            // Check if document number already exists
-            if (await _unitOfWork.Citizens.DocumentNumberExistsAsync(dto.DocumentNumber, cancellationToken))
-                return Result<CitizenDto>.Failure("A citizen with this document number already exists");
-
             // Create citizen entity
             var citizen = new Citizen(
-                dto.FullName,
+                dto.Name,
                 dto.Email,
-                dto.DocumentNumber,
-                dto.PhoneNumber
+                dto.Phone,
+                dto.Neighborhood,
+                dto.Points
             );
 
             // Save to repository
@@ -135,12 +132,13 @@ public class CitizenService : ICitizenService
         return new CitizenDto
         {
             Id = citizen.Id,
-            FullName = citizen.FullName,
+            Name = citizen.Name,
             Email = citizen.Email,
-            PhoneNumber = citizen.PhoneNumber,
-            IsEmailVerified = citizen.IsEmailVerified,
-            IsActive = citizen.IsActive,
-            CreatedAt = citizen.CreatedAt
+            Phone = citizen.Phone,
+            Neighborhood = citizen.Neighborhood,
+            Points = citizen.Points,
+            CreatedAt = citizen.CreatedAt,
+            UpdatedAt = citizen.UpdatedAt
         };
     }
 }

@@ -7,87 +7,31 @@ namespace EngageGov.Domain.Entities;
 /// </summary>
 public class Citizen : BaseEntity
 {
-    public string FullName { get; private set; }
+    public string Name { get; private set; }
     public string Email { get; private set; }
-    public string? PhoneNumber { get; private set; }
-    public string DocumentNumber { get; private set; }
-    public bool IsEmailVerified { get; private set; }
-    public bool IsActive { get; private set; }
+    public string? Phone { get; private set; }
+    public string? Neighborhood { get; private set; }
+    public int Points { get; private set; }
 
-    // Navigation properties
-    public ICollection<Proposal> Proposals { get; private set; } = new List<Proposal>();
-    public ICollection<Vote> Votes { get; private set; } = new List<Vote>();
-    public ICollection<Comment> Comments { get; private set; } = new List<Comment>();
+    // Removido: propriedades de navegação obrigatórias
 
-    // Private constructor for EF Core
     private Citizen()
     {
-        FullName = string.Empty;
+        Name = string.Empty;
         Email = string.Empty;
-        DocumentNumber = string.Empty;
+        Phone = string.Empty;
+        Neighborhood = string.Empty;
+        Points = 0;
     }
 
-    public Citizen(string fullName, string email, string documentNumber, string? phoneNumber = null)
+    public Citizen(string name, string email, string? phone = null, string? neighborhood = null, int points = 0)
         : base()
     {
-        ValidateFullName(fullName);
-        ValidateEmail(email);
-        ValidateDocumentNumber(documentNumber);
-
-        FullName = fullName;
+        Name = name;
         Email = email.ToLowerInvariant();
-        DocumentNumber = documentNumber;
-        PhoneNumber = phoneNumber;
-        IsEmailVerified = false;
-        IsActive = true;
-    }
-
-    public void UpdateProfile(string fullName, string? phoneNumber)
-    {
-        ValidateFullName(fullName);
-
-        FullName = fullName;
-        PhoneNumber = phoneNumber;
-        SetUpdatedAt();
-    }
-
-    public void UpdateEmail(string email)
-    {
-        ValidateEmail(email);
-
-        Email = email.ToLowerInvariant();
-        IsEmailVerified = false;
-        SetUpdatedAt();
-    }
-
-    public void VerifyEmail()
-    {
-        IsEmailVerified = true;
-        SetUpdatedAt();
-    }
-
-    public void Activate()
-    {
-        IsActive = true;
-        SetUpdatedAt();
-    }
-
-    public void Deactivate()
-    {
-        IsActive = false;
-        SetUpdatedAt();
-    }
-
-    private static void ValidateFullName(string fullName)
-    {
-        if (string.IsNullOrWhiteSpace(fullName))
-            throw new ArgumentException("Full name cannot be empty", nameof(fullName));
-
-        if (fullName.Length < 3)
-            throw new ArgumentException("Full name must be at least 3 characters long", nameof(fullName));
-
-        if (fullName.Length > 200)
-            throw new ArgumentException("Full name cannot exceed 200 characters", nameof(fullName));
+        Phone = phone;
+        Neighborhood = neighborhood;
+        Points = points;
     }
 
     private static void ValidateEmail(string email)
@@ -102,15 +46,4 @@ public class Citizen : BaseEntity
             throw new ArgumentException("Email cannot exceed 255 characters", nameof(email));
     }
 
-    private static void ValidateDocumentNumber(string documentNumber)
-    {
-        if (string.IsNullOrWhiteSpace(documentNumber))
-            throw new ArgumentException("Document number cannot be empty", nameof(documentNumber));
-
-        if (documentNumber.Length < 5)
-            throw new ArgumentException("Document number must be at least 5 characters long", nameof(documentNumber));
-
-        if (documentNumber.Length > 50)
-            throw new ArgumentException("Document number cannot exceed 50 characters", nameof(documentNumber));
-    }
 }

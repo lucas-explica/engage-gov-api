@@ -1,8 +1,7 @@
 # Use official lightweight .NET runtime build image for build stage
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0-preview AS build
 
-# Install necessary packages for building on Alpine
-RUN apk add --no-cache icu-libs libintl
+RUN apt-get update && apt-get install -y libicu-dev gettext iputils-ping curl
 
 WORKDIR /src
 
@@ -19,22 +18,21 @@ RUN dotnet restore ./EngageGov.API/EngageGov.API.csproj
 # copy everything else and build
 COPY . .
 WORKDIR /src
-RUN dotnet publish ./src/EngageGov.API/EngageGov.API.csproj -c Release -o /app/publish --no-restore
+RUN dotnet publish ./src/EngageGov.API/EngageGov.API.csproj -c Release -o /app/publish
 
 # runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview AS runtime
 
-# Create a non-root user
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 
-# Install runtime dependencies (icu for globalization if needed)
-RUN apk add --no-cache icu-libs
+RUN apt-get update && apt-get install -y libicu-dev iputils-ping curl
 
 WORKDIR /app
 COPY --from=build /app/publish .
 
 # Set environment for ASP.NET Core
-ENV ASPNETCORE_URLS http://+:80
+EXPOSE 5001
+ENV ASPNETCORE_URLS http://+:5001
 ENV DOTNET_RUNNING_IN_CONTAINER true
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT false
 

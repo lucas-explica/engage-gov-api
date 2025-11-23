@@ -1,4 +1,5 @@
 using EngageGov.Domain.Common;
+using EngageGov.Domain.Enums;
 
 namespace EngageGov.Domain.Entities;
 
@@ -10,10 +11,9 @@ public class Comment : BaseEntity
     public Guid ProposalId { get; private set; }
     public Guid CitizenId { get; private set; }
     public string Content { get; private set; }
+    public CommentSentiment Sentiment { get; private set; } = CommentSentiment.Neutral;
 
-    // Navigation properties
-    public Proposal Proposal { get; private set; } = null!;
-    public Citizen Citizen { get; private set; } = null!;
+    // Removido: propriedades de navegação obrigatórias
 
     // Private constructor for EF Core
     private Comment()
@@ -21,21 +21,19 @@ public class Comment : BaseEntity
         Content = string.Empty;
     }
 
-    public Comment(Guid proposalId, Guid citizenId, string content)
+    public Comment(Guid proposalId, Guid citizenId, string content, CommentSentiment sentiment)
         : base()
     {
-        ValidateContent(content);
-
         ProposalId = proposalId;
         CitizenId = citizenId;
         Content = content;
+        Sentiment = sentiment;
     }
 
-    public void UpdateContent(string content)
+    public void UpdateContent(string content, CommentSentiment sentiment)
     {
-        ValidateContent(content);
-
         Content = content;
+        Sentiment = sentiment;
         SetUpdatedAt();
     }
 

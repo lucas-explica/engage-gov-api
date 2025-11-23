@@ -16,7 +16,6 @@ public class ProposalDto
     public string Location { get; set; } = string.Empty;
     public decimal? EstimatedCost { get; set; }
     public DateTime? TargetCompletionDate { get; set; }
-    public int VoteCount { get; set; }
     public Guid CitizenId { get; set; }
     public string CitizenName { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }

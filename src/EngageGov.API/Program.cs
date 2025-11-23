@@ -7,7 +7,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Configure Kestrel ports depending on environment to avoid HTTP/HTTPS confusion in development.
 var env = builder.Environment.EnvironmentName;
-if (string.Equals(env, "Development", StringComparison.OrdinalIgnoreCase))
+var runningInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+if (runningInContainer)
+{
+    // In Docker, use only HTTP (no HTTPS)
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.ListenAnyIP(5001); // HTTP only
+    });
+}
+else if (string.Equals(env, "Development", StringComparison.OrdinalIgnoreCase))
 {
     // Use conventional dev ports: HTTP 5000, HTTPS 5001 (dev cert via dotnet dev-certs)
     builder.WebHost.ConfigureKestrel(options =>
@@ -33,21 +42,42 @@ builder.Services.AddHostedService<EngageGov.API.Services.StartupDiagnosticsServi
 // Configure Clean Architecture layers
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+// Registrar CommentService
+builder.Services.AddScoped<EngageGov.Application.Services.ICommentService, EngageGov.Infrastructure.Services.CommentService>();
 
 // Named HttpClient for external government data (Câmara Dados Abertos)
 builder.Services.AddHttpClient("camara", client =>
 {
     client.BaseAddress = new Uri("https://dadosabertos.camara.leg.br");
-    client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.DefaultRequestHeaders.Accept.Clear();
+    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 });
 
 // Register ExternalGovService as a typed client using the named 'camara' HttpClient
 builder.Services.AddHttpClient<EngageGov.Application.Services.ExternalGovService>(client =>
 {
     client.BaseAddress = new Uri("https://dadosabertos.camara.leg.br");
-    client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.DefaultRequestHeaders.Accept.Clear();
+    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 });
 builder.Services.AddScoped<EngageGov.Application.Interfaces.IExternalGovService>(sp => sp.GetRequiredService<EngageGov.Application.Services.ExternalGovService>());
+
+// Register CamaraGovService as typed HttpClient and default IGovernmentDataService
+builder.Services.AddHttpClient<EngageGov.Application.Services.CamaraGovService>(client =>
+{
+    client.BaseAddress = new Uri("https://dadosabertos.camara.leg.br");
+    client.DefaultRequestHeaders.Accept.Clear();
+    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+});
+builder.Services.AddScoped<EngageGov.Application.Interfaces.IGovernmentDataService>(sp => sp.GetRequiredService<EngageGov.Application.Services.CamaraGovService>());
+
+// Register Senado service (skeleton) - implementation to be completed
+builder.Services.AddHttpClient<EngageGov.Application.Services.SenadoGovService>(client =>
+{
+    client.BaseAddress = new Uri("https://legis.senado.leg.br");
+    client.DefaultRequestHeaders.Accept.Clear();
+    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+});
 
 // Add controllers
 builder.Services.AddControllers();
@@ -107,17 +137,19 @@ builder.Services.AddSwaggerGen(options =>
 // Add CORS policy for security
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigins", policy =>
+    options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins(builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:3000" })
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+              .AllowAnyMethod();
     });
 });
 
 // Add health checks
 builder.Services.AddHealthChecks();
+
+// In-memory caching for external API responses (used by external services)
+builder.Services.AddMemoryCache();
 
 // Configure logging
 builder.Logging.ClearProviders();
@@ -130,11 +162,14 @@ var app = builder.Build();
 // Use custom exception handling middleware
 app.UseExceptionHandling();
 
-// Enable HTTPS redirection for security
-app.UseHttpsRedirection();
+// Enable CORS as early as possible (global policy)
+app.UseCors();
 
-// Enable CORS
-app.UseCors("AllowSpecificOrigins");
+// Enable HTTPS redirection for security (disable in Docker)
+if (!runningInContainer)
+{
+    app.UseHttpsRedirection();
+}
 
 // Configure Swagger in development
 if (app.Environment.IsDevelopment())

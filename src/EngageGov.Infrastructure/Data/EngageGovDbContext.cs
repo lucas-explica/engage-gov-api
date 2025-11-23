@@ -16,7 +16,6 @@ public class EngageGovDbContext : DbContext
 
     public DbSet<Citizen> Citizens => Set<Citizen>();
     public DbSet<Proposal> Proposals => Set<Proposal>();
-    public DbSet<Vote> Votes => Set<Vote>();
     public DbSet<Comment> Comments => Set<Comment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -26,34 +25,19 @@ public class EngageGovDbContext : DbContext
         // Configure Citizen entity
         modelBuilder.Entity<Citizen>(entity =>
         {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.FullName).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
-            entity.Property(e => e.DocumentNumber).IsRequired().HasMaxLength(50);
-            entity.Property(e => e.PhoneNumber).HasMaxLength(20);
-            entity.Property(e => e.IsEmailVerified).IsRequired();
-            entity.Property(e => e.IsActive).IsRequired();
-            entity.Property(e => e.CreatedAt).IsRequired();
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired(false).HasMaxLength(200);
+                entity.Property(e => e.Email).IsRequired(false).HasMaxLength(255);
+                entity.Property(e => e.Phone).IsRequired(false).HasMaxLength(20);
+                entity.Property(e => e.Neighborhood).IsRequired(false).HasMaxLength(100);
+                entity.Property(e => e.Points).IsRequired().HasDefaultValue(0);
+                entity.Property(e => e.CreatedAt).IsRequired();
+                entity.Property(e => e.UpdatedAt).IsRequired(false);
 
-            // Indexes for performance
-            entity.HasIndex(e => e.Email).IsUnique();
-            entity.HasIndex(e => e.DocumentNumber).IsUnique();
-
-            // Relationships
-            entity.HasMany(e => e.Proposals)
-                .WithOne(p => p.Citizen)
-                .HasForeignKey(p => p.CitizenId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasMany(e => e.Votes)
-                .WithOne(v => v.Citizen)
-                .HasForeignKey(v => v.CitizenId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasMany(e => e.Comments)
-                .WithOne(c => c.Citizen)
-                .HasForeignKey(c => c.CitizenId)
-                .OnDelete(DeleteBehavior.Restrict);
+                // Índices para performance
+                entity.HasIndex(e => e.Email).IsUnique();
+                entity.HasIndex(e => e.Phone);
+                // Nenhum relacionamento obrigatório
         });
 
         // Configure Proposal entity
@@ -67,7 +51,6 @@ public class EngageGovDbContext : DbContext
             entity.Property(e => e.Status).IsRequired();
             entity.Property(e => e.Priority).IsRequired();
             entity.Property(e => e.EstimatedCost).HasColumnType("decimal(18,2)");
-            entity.Property(e => e.VoteCount).IsRequired();
             entity.Property(e => e.CreatedAt).IsRequired();
 
             // Indexes for performance
@@ -75,29 +58,10 @@ public class EngageGovDbContext : DbContext
             entity.HasIndex(e => e.Type);
             entity.HasIndex(e => e.CitizenId);
             entity.HasIndex(e => e.CreatedAt);
-
-            // Relationships
-            entity.HasMany(e => e.Votes)
-                .WithOne(v => v.Proposal)
-                .HasForeignKey(v => v.ProposalId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasMany(e => e.Comments)
-                .WithOne(c => c.Proposal)
-                .HasForeignKey(c => c.ProposalId)
-                .OnDelete(DeleteBehavior.Cascade);
+            // Nenhum relacionamento obrigatório
         });
 
-        // Configure Vote entity
-        modelBuilder.Entity<Vote>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.IsUpvote).IsRequired();
-            entity.Property(e => e.CreatedAt).IsRequired();
-
-            // Composite index to prevent duplicate votes
-            entity.HasIndex(e => new { e.ProposalId, e.CitizenId }).IsUnique();
-        });
+    // Removido: sistema de votos
 
         // Configure Comment entity
         modelBuilder.Entity<Comment>(entity =>
@@ -109,6 +73,7 @@ public class EngageGovDbContext : DbContext
             // Indexes
             entity.HasIndex(e => e.ProposalId);
             entity.HasIndex(e => e.CitizenId);
+            // Nenhum relacionamento obrigatório
         });
     }
 }

@@ -18,6 +18,60 @@
       },
       "response": []
     },
+          {
+            "name": "Citizens - Create",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"Maria Silva\",\n  \"email\": \"maria.silva@email.com\",\n  \"phone\": \"+5511999999999\",\n  \"neighborhood\": \"Centro\",\n  \"points\": 0\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/citizens",
+                "host": ["{{base_url}}"],
+                "path": ["api","citizens"]
+              }
+            },
+            "response": []
+          },
+      {
+        "name": "Comments - List",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/comments?lawId=00000000-0000-0000-0000-000000000000",
+            "host": ["{{base_url}}"],
+            "path": ["api","comments"],
+            "query": [
+              { "key": "lawId", "value": "00000000-0000-0000-0000-000000000000" }
+            ]
+          }
+        },
+        "response": []
+      },
+      {
+        "name": "Comments - Create",
+        "request": {
+          "method": "POST",
+          "header": [
+            { "key": "Content-Type", "value": "application/json" }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"lawId\": \"00000000-0000-0000-0000-000000000000\",\n  \"citizenId\": \"00000000-0000-0000-0000-000000000000\",\n  \"content\": \"Comentário de teste\"\n}"
+          },
+          "url": {
+            "raw": "{{base_url}}/api/comments",
+            "host": ["{{base_url}}"],
+            "path": ["api","comments"]
+          }
+        },
+        "response": []
+      },
     {
       "name": "Laws - List (year)",
       "request": {

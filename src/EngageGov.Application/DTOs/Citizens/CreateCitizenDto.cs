@@ -5,8 +5,9 @@ namespace EngageGov.Application.DTOs.Citizens;
 /// </summary>
 public class CreateCitizenDto
 {
-    public string FullName { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
-    public string DocumentNumber { get; set; } = string.Empty;
-    public string? PhoneNumber { get; set; }
+    public string? Phone { get; set; }
+    public string? Neighborhood { get; set; }
+    public int Points { get; set; } = 0;
 }

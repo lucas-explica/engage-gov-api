@@ -32,8 +32,6 @@ public class ProposalService : IProposalService
             if (citizen == null)
                 return Result<ProposalDto>.Failure("Citizen not found");
 
-            if (!citizen.IsActive)
-                return Result<ProposalDto>.Failure("Citizen account is not active");
 
             // Create proposal entity
             var proposal = new Proposal(
@@ -56,7 +54,7 @@ public class ProposalService : IProposalService
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Map to DTO
-            var proposalDto = MapToDto(proposal, citizen.FullName);
+            var proposalDto = MapToDto(proposal, citizen.Name);
 
             return Result<ProposalDto>.Success(proposalDto);
         }
@@ -79,7 +77,7 @@ public class ProposalService : IProposalService
                 return Result<ProposalDto>.Failure("Proposal not found");
 
             var citizen = await _unitOfWork.Citizens.GetByIdAsync(proposal.CitizenId, cancellationToken);
-            var proposalDto = MapToDto(proposal, citizen?.FullName ?? "Unknown");
+            var proposalDto = MapToDto(proposal, citizen?.Name ?? "Unknown");
 
             return Result<ProposalDto>.Success(proposalDto);
         }
@@ -94,7 +92,12 @@ public class ProposalService : IProposalService
         try
         {
             var proposals = await _unitOfWork.Proposals.GetAllAsync(cancellationToken);
-            var proposalDtos = proposals.Select(p => MapToDto(p, p.Citizen?.FullName ?? "Unknown"));
+            var proposalDtos = new List<ProposalDto>();
+            foreach (var p in proposals)
+            {
+                var citizen = await _unitOfWork.Citizens.GetByIdAsync(p.CitizenId, cancellationToken);
+                proposalDtos.Add(MapToDto(p, citizen?.Name ?? "Unknown"));
+            }
 
             return Result<IEnumerable<ProposalDto>>.Success(proposalDtos);
         }
@@ -111,7 +114,12 @@ public class ProposalService : IProposalService
         try
         {
             var proposals = await _unitOfWork.Proposals.GetByStatusAsync(status, cancellationToken);
-            var proposalDtos = proposals.Select(p => MapToDto(p, p.Citizen?.FullName ?? "Unknown"));
+            var proposalDtos = new List<ProposalDto>();
+            foreach (var p in proposals)
+            {
+                var citizen = await _unitOfWork.Citizens.GetByIdAsync(p.CitizenId, cancellationToken);
+                proposalDtos.Add(MapToDto(p, citizen?.Name ?? "Unknown"));
+            }
 
             return Result<IEnumerable<ProposalDto>>.Success(proposalDtos);
         }
@@ -132,7 +140,7 @@ public class ProposalService : IProposalService
                 return Result<IEnumerable<ProposalDto>>.Failure("Citizen not found");
 
             var proposals = await _unitOfWork.Proposals.GetByCitizenIdAsync(citizenId, cancellationToken);
-            var proposalDtos = proposals.Select(p => MapToDto(p, citizen.FullName));
+            var proposalDtos = proposals.Select(p => MapToDto(p, citizen.Name));
 
             return Result<IEnumerable<ProposalDto>>.Success(proposalDtos);
         }
@@ -173,7 +181,7 @@ public class ProposalService : IProposalService
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             var citizen = await _unitOfWork.Citizens.GetByIdAsync(proposal.CitizenId, cancellationToken);
-            var proposalDto = MapToDto(proposal, citizen?.FullName ?? "Unknown");
+            var proposalDto = MapToDto(proposal, citizen?.Name ?? "Unknown");
 
             return Result<ProposalDto>.Success(proposalDto);
         }
@@ -213,7 +221,12 @@ public class ProposalService : IProposalService
         try
         {
             var proposals = await _unitOfWork.Proposals.SearchAsync(searchTerm, cancellationToken);
-            var proposalDtos = proposals.Select(p => MapToDto(p, p.Citizen?.FullName ?? "Unknown"));
+            var proposalDtos = new List<ProposalDto>();
+            foreach (var p in proposals)
+            {
+                var citizen = await _unitOfWork.Citizens.GetByIdAsync(p.CitizenId, cancellationToken);
+                proposalDtos.Add(MapToDto(p, citizen?.Name ?? "Unknown"));
+            }
 
             return Result<IEnumerable<ProposalDto>>.Success(proposalDtos);
         }
@@ -236,7 +249,7 @@ public class ProposalService : IProposalService
             Location = proposal.Location,
             EstimatedCost = proposal.EstimatedCost,
             TargetCompletionDate = proposal.TargetCompletionDate,
-            VoteCount = proposal.VoteCount,
+            // Removido: sistema de votos
             CitizenId = proposal.CitizenId,
             CitizenName = citizenName,
             CreatedAt = proposal.CreatedAt,

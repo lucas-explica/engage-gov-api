@@ -8,20 +8,29 @@ namespace EngageGov.API.Controllers;
 [Produces("application/json")]
 public class LawsController : ControllerBase
 {
-    private readonly IExternalGovService _external;
+    private readonly EngageGov.Application.Interfaces.IGovernmentDataService _gov;
     private readonly ILogger<LawsController> _logger;
 
-    public LawsController(IExternalGovService external, ILogger<LawsController> logger)
+    public LawsController(EngageGov.Application.Interfaces.IGovernmentDataService gov, ILogger<LawsController> logger)
     {
-        _external = external ?? throw new ArgumentNullException(nameof(external));
+        _gov = gov ?? throw new ArgumentNullException(nameof(gov));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] int year = 2024, [FromQuery] int items = 50, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Get([FromQuery] string source = "camara", [FromQuery] int year = 2025, [FromQuery] int items = 50, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Fetching laws for year {Year}", year);
-        var list = await _external.GetProposalsAsync(year, items, cancellationToken);
+        _logger.LogInformation("Fetching laws for year {Year} from source {Source}", year, source);
+        var list = await _gov.GetLawsAsync(source, year, items, cancellationToken);
         return Ok(list);
+    }
+
+    [HttpGet("{externalId}")]
+    public async Task<IActionResult> GetByExternalId(string externalId, CancellationToken cancellationToken)
+    {
+        var law = await _gov.GetLawByExternalIdAsync("camara", externalId, cancellationToken);
+        if (law == null)
+            return NotFound();
+        return Ok(law);
     }
 }

@@ -10,19 +10,19 @@ public class RepresentativesController : ControllerBase
 {
     private readonly ILogger<RepresentativesController> _logger;
 
-    private readonly IExternalGovService _external;
+    private readonly EngageGov.Application.Interfaces.IGovernmentDataService _gov;
 
-    public RepresentativesController(ILogger<RepresentativesController> logger, IExternalGovService external)
+    public RepresentativesController(ILogger<RepresentativesController> logger, EngageGov.Application.Interfaces.IGovernmentDataService gov)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _external = external ?? throw new ArgumentNullException(nameof(external));
+        _gov = gov ?? throw new ArgumentNullException(nameof(gov));
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll([FromQuery] string source = "camara", CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Fetching representatives from external API");
-        var reps = await _external.GetRepresentativesAsync(cancellationToken);
+        _logger.LogInformation("Fetching representatives from source {Source}", source);
+        var reps = await _gov.GetRepresentativesAsync(source, cancellationToken);
         return Ok(reps);
     }
 }

@@ -18,16 +18,12 @@ public class ProposalRepository : Repository<Proposal>, IProposalRepository
     public override async Task<Proposal?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Include(p => p.Citizen)
-            .Include(p => p.Votes)
-            .Include(p => p.Comments)
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
     public override async Task<IEnumerable<Proposal>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Include(p => p.Citizen)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
     }
@@ -37,7 +33,6 @@ public class ProposalRepository : Repository<Proposal>, IProposalRepository
         CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Include(p => p.Citizen)
             .Where(p => p.Status == status)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -48,7 +43,6 @@ public class ProposalRepository : Repository<Proposal>, IProposalRepository
         CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Include(p => p.Citizen)
             .Where(p => p.CitizenId == citizenId)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -59,22 +53,11 @@ public class ProposalRepository : Repository<Proposal>, IProposalRepository
         CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Include(p => p.Citizen)
             .Where(p => p.Type == type)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<Proposal>> GetTopVotedAsync(
-        int count, 
-        CancellationToken cancellationToken = default)
-    {
-        return await _dbSet
-            .Include(p => p.Citizen)
-            .OrderByDescending(p => p.VoteCount)
-            .Take(count)
-            .ToListAsync(cancellationToken);
-    }
 
     public async Task<IEnumerable<Proposal>> SearchAsync(
         string searchTerm, 
@@ -86,7 +69,6 @@ public class ProposalRepository : Repository<Proposal>, IProposalRepository
         var lowerSearchTerm = searchTerm.ToLowerInvariant();
 
         return await _dbSet
-            .Include(p => p.Citizen)
             .Where(p => EF.Functions.Like(p.Title.ToLower(), $"%{lowerSearchTerm}%") ||
                        EF.Functions.Like(p.Description.ToLower(), $"%{lowerSearchTerm}%") ||
                        EF.Functions.Like(p.Location.ToLower(), $"%{lowerSearchTerm}%"))

@@ -17,9 +17,6 @@ public class CitizenRepository : Repository<Citizen>, ICitizenRepository
     public override async Task<Citizen?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Include(c => c.Proposals)
-            .Include(c => c.Votes)
-            .Include(c => c.Comments)
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
 
@@ -29,25 +26,12 @@ public class CitizenRepository : Repository<Citizen>, ICitizenRepository
             .FirstOrDefaultAsync(c => c.Email == email.ToLower(), cancellationToken);
     }
 
-    public async Task<Citizen?> GetByDocumentNumberAsync(
-        string documentNumber, 
-        CancellationToken cancellationToken = default)
-    {
-        return await _dbSet
-            .FirstOrDefaultAsync(c => c.DocumentNumber == documentNumber, cancellationToken);
-    }
-
+    // Removed: GetByDocumentNumberAsync (property no longer exists)
     public async Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken = default)
     {
         return await _dbSet
             .AnyAsync(c => c.Email == email.ToLower(), cancellationToken);
     }
 
-    public async Task<bool> DocumentNumberExistsAsync(
-        string documentNumber, 
-        CancellationToken cancellationToken = default)
-    {
-        return await _dbSet
-            .AnyAsync(c => c.DocumentNumber == documentNumber, cancellationToken);
-    }
+    // Removed: DocumentNumberExistsAsync (property no longer exists)
 }

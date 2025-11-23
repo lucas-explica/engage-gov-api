@@ -17,12 +17,9 @@ public class Proposal : BaseEntity
     public string Location { get; private set; }
     public decimal? EstimatedCost { get; private set; }
     public DateTime? TargetCompletionDate { get; private set; }
-    public int VoteCount { get; private set; }
+    // Removido: sistema de votos
 
-    // Navigation property
-    public Citizen Citizen { get; private set; } = null!;
-    public ICollection<Vote> Votes { get; private set; } = new List<Vote>();
-    public ICollection<Comment> Comments { get; private set; } = new List<Comment>();
+    // Removido: propriedades de navegação obrigatórias
 
     // Private constructor for EF Core
     private Proposal() 
@@ -52,7 +49,7 @@ public class Proposal : BaseEntity
         Location = location;
         Priority = priority;
         Status = ProposalStatus.Draft;
-        VoteCount = 0;
+    // Removido: sistema de votos
     }
 
     public void UpdateDetails(string title, string description, string location)
@@ -103,18 +100,7 @@ public class Proposal : BaseEntity
         SetUpdatedAt();
     }
 
-    public void IncrementVoteCount()
-    {
-        VoteCount++;
-        SetUpdatedAt();
-    }
-
-    public void DecrementVoteCount()
-    {
-        if (VoteCount > 0)
-            VoteCount--;
-        SetUpdatedAt();
-    }
+    // Removido: sistema de votos
 
     private static void ValidateTitle(string title)
     {
