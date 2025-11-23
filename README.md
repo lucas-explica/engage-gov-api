@@ -122,6 +122,37 @@ This project adheres to **SOLID** principles and clean code practices:
    - Navigate to: `https://localhost:5001` (or the port shown in terminal)
    - The Swagger UI will be displayed at the root URL in development mode
 
+## Running with Docker
+
+This project provides a multi-stage Dockerfile and a docker-compose configuration for local testing.
+
+Build the image:
+
+```powershell
+cd engage-gov-api
+docker build -t engagegov/api:local .
+```
+
+Run with docker:
+
+```powershell
+docker run --rm -p 5001:80 --name engagegov-api engagegov/api:local
+```
+
+Or use docker-compose (recommended for local development):
+
+```powershell
+cd engage-gov-api
+docker-compose up --build
+```
+
+The service exposes a health endpoint at `/health`.
+
+Notes:
+- The container runs as a non-root user for improved security.
+- The image is based on Alpine for a small footprint and uses the official Microsoft .NET runtime images.
+- If you need HTTPS locally, configure certificates appropriately or run behind a reverse proxy.
+
 ## 📊 Database
 
 ### Development

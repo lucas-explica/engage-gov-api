@@ -5,6 +5,30 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure Kestrel ports depending on environment to avoid HTTP/HTTPS confusion in development.
+var env = builder.Environment.EnvironmentName;
+if (string.Equals(env, "Development", StringComparison.OrdinalIgnoreCase))
+{
+    // Use conventional dev ports: HTTP 5000, HTTPS 5001 (dev cert via dotnet dev-certs)
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.ListenLocalhost(5000); // HTTP
+        options.ListenLocalhost(5001, listenOptions => listenOptions.UseHttps()); // HTTPS
+    });
+}
+else
+{
+    // Production/default: explicit localhost HTTP 5001 and HTTPS 5002 (if needed)
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.ListenLocalhost(5001);
+        options.ListenLocalhost(5002, listenOptions => { listenOptions.UseHttps(); });
+    });
+}
+
+// Add a minimal diagnostic hosted service to log lifecycle events (helps identify immediate shutdown causes)
+builder.Services.AddHostedService<EngageGov.API.Services.StartupDiagnosticsService>();
+
 // Add services to the container
 // Configure Clean Architecture layers
 builder.Services.AddApplication();

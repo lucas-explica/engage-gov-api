@@ -1,0 +1,147 @@
+{
+  "info": {
+    "_postman_id": "b3f8c6a2-5b6c-4f6a-9f4d-1a2b3c4d5e6f",
+    "name": "EngageGov API - Test Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Representatives - List",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/representatives",
+          "host": ["{{base_url}}"],
+          "path": ["api","representatives"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Laws - List (year)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/laws?year=2024&items=10",
+          "host": ["{{base_url}}"],
+          "path": ["api","laws"],
+          "query": [
+            { "key": "year", "value": "2024" },
+            { "key": "items", "value": "10" }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Letters - List",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/letters",
+          "host": ["{{base_url}}"],
+          "path": ["api","letters"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Interactions - Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"citizenId\": \"00000000-0000-0000-0000-000000000000\",\n  \"lawId\": \"00000000-0000-0000-0000-000000000000\",\n  \"type\": \"vote\",\n  \"payload\": {}\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/interactions",
+          "host": ["{{base_url}}"],
+          "path": ["api","interactions"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Templates - Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Default Template\",\n  \"subject\": \"Assunto de teste\",\n  \"body\": \"Olá {{name}}, este é um teste.\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/templates",
+          "host": ["{{base_url}}"],
+          "path": ["api","templates"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Templates - Send",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"recipients\": [\"citizen@example.com\"],\n  \"variablesMap\": { \"name\": \"João\" }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/templates/{{templateId}}/send",
+          "host": ["{{base_url}}"],
+          "path": ["api","templates","{{templateId}}","send"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "AI - Query",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"query\": \"Resuma as últimas proposições relacionadas a meio ambiente.\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/ai/query",
+          "host": ["{{base_url}}"],
+          "path": ["api","ai","query"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Notifications - Send",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"email\",\n  \"to\": \"citizen@example.com\",\n  \"message\": \"Mensagem de teste\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/notifications/send",
+          "host": ["{{base_url}}"],
+          "path": ["api","notifications","send"]
+        }
+      },
+      "response": []
+    }
+  ]
+}
