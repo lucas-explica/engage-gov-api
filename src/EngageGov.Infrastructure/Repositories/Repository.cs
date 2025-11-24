@@ -21,12 +21,41 @@ public class Repository<T> : IRepository<T> where T : class
 
     public virtual async Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _dbSet.FindAsync(new object[] { id }, cancellationToken);
+        return await ExecuteWithRetry(async () => await _dbSet.FindAsync(new object[] { id }, cancellationToken).AsTask());
     }
 
     public virtual async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await _dbSet.ToListAsync(cancellationToken);
+        return await ExecuteWithRetry(async () => await _dbSet.ToListAsync(cancellationToken));
+    }
+
+    // Small, generic retry wrapper to mitigate transient DB/network issues (e.g. Npgsql timeouts)
+    private static async Task<TResult> ExecuteWithRetry<TResult>(Func<Task<TResult>> operation)
+    {
+        const int maxAttempts = 3;
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                return await operation();
+            }
+            catch (Exception ex) when (IsTransient(ex))
+            {
+                if (attempt >= maxAttempts) throw;
+                // simple backoff
+                await Task.Delay(200 * attempt);
+            }
+        }
+    }
+
+    private static bool IsTransient(Exception ex)
+    {
+        if (ex is OperationCanceledException) return true;
+        if (ex is TimeoutException) return true;
+        // Inspect messages for known transient indications (defensive)
+        if (ex.Message != null && ex.Message.IndexOf("Timeout", StringComparison.OrdinalIgnoreCase) >= 0) return true;
+        if (ex.InnerException != null && ex.InnerException.Message != null && ex.InnerException.Message.IndexOf("Timeout", StringComparison.OrdinalIgnoreCase) >= 0) return true;
+        return false;
     }
 
     public virtual async Task<T> AddAsync(T entity, CancellationToken cancellationToken = default)

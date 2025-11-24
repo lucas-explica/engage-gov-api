@@ -44,6 +44,13 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 // Registrar CommentService
 builder.Services.AddScoped<EngageGov.Application.Services.ICommentService, EngageGov.Infrastructure.Services.CommentService>();
+// Register repositories and services used by controllers
+builder.Services.AddScoped<EngageGov.Application.Interfaces.ILetterRepository, EngageGov.Infrastructure.Repositories.LetterRepository>();
+builder.Services.AddScoped<EngageGov.Application.Interfaces.ILetterService, EngageGov.Application.Services.LetterService>();
+
+// Register Template repository and service
+builder.Services.AddScoped<EngageGov.Application.Interfaces.ITemplateRepository, EngageGov.Infrastructure.Repositories.TemplateRepository>();
+builder.Services.AddScoped<EngageGov.Application.Interfaces.ITemplateService, EngageGov.Application.Services.TemplateService>();
 
 // Named HttpClient for external government data (Câmara Dados Abertos)
 builder.Services.AddHttpClient("camara", client =>

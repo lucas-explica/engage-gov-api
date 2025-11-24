@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using EngageGov.Application.DTOs.Templates;
+using EngageGov.Application.Interfaces;
 
 namespace EngageGov.API.Controllers;
 
@@ -8,48 +10,53 @@ namespace EngageGov.API.Controllers;
 public class TemplatesController : ControllerBase
 {
     private readonly ILogger<TemplatesController> _logger;
+    private readonly ITemplateService _templateService;
 
-    public TemplatesController(ILogger<TemplatesController> logger)
+    public TemplatesController(ILogger<TemplatesController> logger, ITemplateService templateService)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _templateService = templateService ?? throw new ArgumentNullException(nameof(templateService));
     }
 
+    // GET: api/templates
     [HttpGet]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Returning placeholder templates list");
-        var templates = new[] {
-            new { id = Guid.NewGuid(), name = "Default", subject = "Hello", body = "Hi {{name}}" }
-        };
+        var templates = await _templateService.GetAllAsync(cancellationToken);
         return Ok(templates);
     }
 
+    // GET: api/templates/{id}
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
+    {
+        var template = await _templateService.GetByIdAsync(id, cancellationToken);
+        if (template == null) return NotFound();
+        return Ok(template);
+    }
+
+    // POST: api/templates
     [HttpPost]
-    public IActionResult Create([FromBody] object dto)
+    public async Task<IActionResult> Create([FromBody] TemplateDto dto, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Creating template");
-        var created = new { id = Guid.NewGuid() };
-        return CreatedAtAction(nameof(GetAll), created);
+        var created = await _templateService.CreateAsync(dto, cancellationToken);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
-    [HttpPut("{id}")]
-    public IActionResult Update(Guid id, [FromBody] object dto)
+    // PATCH: api/templates/{id}
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] TemplateDto dto, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Updating template {TemplateId}", id);
-        return Ok(new { id });
-    }
-
-    [HttpDelete("{id}")]
-    public IActionResult Delete(Guid id)
-    {
-        _logger.LogInformation("Deleting template {TemplateId}", id);
+        if (id != dto.Id) return BadRequest();
+        await _templateService.UpdateAsync(dto, cancellationToken);
         return NoContent();
     }
 
-    [HttpPost("{id}/send")]
-    public IActionResult Send(Guid id, [FromBody] object payload)
+    // DELETE: api/templates/{id}
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Sending template {TemplateId}", id);
-        return Ok(new { sent = true, templateId = id });
+        await _templateService.DeleteAsync(id, cancellationToken);
+        return NoContent();
     }
 }

@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using EngageGov.Application.DTOs.Letters;
+using EngageGov.Application.Interfaces;
 
 namespace EngageGov.API.Controllers;
 
@@ -8,31 +10,53 @@ namespace EngageGov.API.Controllers;
 public class LettersController : ControllerBase
 {
     private readonly ILogger<LettersController> _logger;
+    private readonly ILetterService _letterService;
 
-    public LettersController(ILogger<LettersController> logger)
+    public LettersController(ILogger<LettersController> logger, ILetterService letterService)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _letterService = letterService ?? throw new ArgumentNullException(nameof(letterService));
     }
 
     // GET: api/letters
     [HttpGet]
-    public IActionResult GetAll(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        // Return an empty list placeholder. Frontend should handle empty arrays.
-        _logger.LogInformation("Returning placeholder letters list");
-        var letters = new[] {
-            new { id = Guid.NewGuid(), title = "Welcome letter", status = "draft", createdAt = DateTime.UtcNow }
-        };
+        var letters = await _letterService.GetAllAsync(cancellationToken);
         return Ok(letters);
+    }
+
+    // GET: api/letters/{id}
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
+    {
+        var letter = await _letterService.GetByIdAsync(id, cancellationToken);
+        if (letter == null) return NotFound();
+        return Ok(letter);
+    }
+
+    // POST: api/letters
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] LetterDto dto, CancellationToken cancellationToken)
+    {
+        var created = await _letterService.CreateAsync(dto, cancellationToken);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     // PATCH: api/letters/{id}
     [HttpPatch("{id}")]
-    public IActionResult Update(Guid id, [FromBody] object body, CancellationToken cancellationToken)
+    public async Task<IActionResult> Update(Guid id, [FromBody] LetterDto dto, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Updating letter {LetterId}", id);
-        // In-memory placeholder: echo back updated resource
-        var updated = new { id, updated = true };
-        return Ok(updated);
+        if (id != dto.Id) return BadRequest();
+        await _letterService.UpdateAsync(dto, cancellationToken);
+        return NoContent();
+    }
+
+    // DELETE: api/letters/{id}
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        await _letterService.DeleteAsync(id, cancellationToken);
+        return NoContent();
     }
 }
